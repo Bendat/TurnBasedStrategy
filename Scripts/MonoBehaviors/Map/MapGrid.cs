@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using Assets.TurnBasedStrategy.Scripts.Common;
+using Assets.TurnBasedStrategy.Scripts.Enums;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -100,7 +101,29 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
             cell.Coordinates = MapCoordinates.FromOffsetCoordinates(coords);
             cell.name = $"Cell{cell.Coordinates}";
             cell.Color = DefaultColor;
-
+            if (coords.X > 0)
+            {
+                cell.SetNeighbor(HexDirection.W, _cells[index - 1]);
+            }
+            if (coords.Z > 0)
+            {
+                if ((coords.Z & 1) == 0)
+                {
+                    cell.SetNeighbor(HexDirection.SE, _cells[index - Width]);
+                    if (coords.X > 0)
+                    {
+                        cell.SetNeighbor(HexDirection.SW, _cells[index - Width - 1]);
+                    }
+                }
+                else
+                {
+                    cell.SetNeighbor(HexDirection.SW, _cells[index - Width]);
+                    if (coords.X < Width - 1)
+                    {
+                        cell.SetNeighbor(HexDirection.SE, _cells[index - Width + 1]);
+                    }
+                }
+            }
             var label = Instantiate<Text>(CellLabelPrefab);
             label.rectTransform.SetParent(_canvas.transform, false);
             label.rectTransform.anchoredPosition = new Vector2(position.x, position.z);
