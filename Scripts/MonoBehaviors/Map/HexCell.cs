@@ -10,6 +10,10 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
     /// </summary>
     public class HexCell : MonoBehaviour {
 
+        public const float SolidFactor = 0.75f;
+
+        public const float BlendFactor = 1f - SolidFactor;
+
         /// <summary>
         /// The diameter outer circle touching all 6 points of the hexagon.
         /// </summary>
@@ -47,7 +51,6 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
 
         [SerializeField] private HexCell[] _neighbors;
 
-
         public static Vector3 GetFirstCorner(HexDirection direction)
         {
             return Corners[(int)direction];
@@ -67,6 +70,23 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
         {
             _neighbors[(int) direction] = cell;
             cell._neighbors[(int)direction] = this;
+            cell._neighbors[(int)direction.Opposite()] = this;
+        }
+
+        public static Vector3 GetFirstSolidCorner(HexDirection direction)
+        {
+            return Corners[(int)direction] * SolidFactor;
+        }
+
+        public static Vector3 GetSecondSolidCorner(HexDirection direction)
+        {
+            return Corners[(int)direction + 1] * SolidFactor;
+        }
+
+        public static Vector3 GetBridge(HexDirection direction)
+        {
+            return (Corners[(int)direction] + Corners[(int)direction + 1]) *
+                   0.5f * BlendFactor;
         }
     }
 }

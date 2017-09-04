@@ -297,6 +297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e71caaa1104ed5d42ac2de7ff113d56b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _colors: []
 --- !u!23 &252735845
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -365,19 +366,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7a57fc88a264ea48978ec4829bdd673, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zoom: 1
-  MoveSpeedMinZoom: 31.2
-  MoveSpeedMaxZoom: 86.55
-  RotationSpeed: 30.13
+  MoveSpeedMinZoom: 50
+  MoveSpeedMaxZoom: 120
+  RotationSpeed: 0
   MaxRotationAngle: 0
-  MoveSpeed: 86.39
-  SwivelMinZoom: 20
-  SwivelMaxZoom: 30
-  StickMinZoom: 0
+  MoveSpeed: 0
+  SwivelMinZoom: 35
+  SwivelMaxZoom: 50
+  StickMinZoom: -40
   StickMaxZoom: 0
-  Grid: {fileID: 1347942941}
+  _originalRotation: {x: 0, y: 0, z: 0, w: 0}
+  _swivel: {fileID: 0}
+  _stick: {fileID: 0}
   _lastDelta: 0
   _rotationAngle: 0
+  _zoom: 0
 --- !u!4 &318686248
 Transform:
   m_ObjectHideFlags: 0
@@ -1194,10 +1197,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Colors:
-  - {r: 1, g: 0.9668954, b: 0.74070066, a: 0}
-  - {r: 0.5380622, g: 0.85294116, b: 0.5268166, a: 0}
-  - {r: 0.37110725, g: 0.5240782, b: 0.9705882, a: 0}
-  - {r: 1, g: 1, b: 1, a: 0}
+  - {r: 0, g: 0, b: 0, a: 0}
+  - {r: 0, g: 0, b: 0, a: 0}
+  - {r: 0, g: 0, b: 0, a: 0}
+  - {r: 0, g: 0, b: 0, a: 0}
   MapGrid: {fileID: 1347942941}
 --- !u!114 &1590138162
 MonoBehaviour:

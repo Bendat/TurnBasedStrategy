@@ -6,6 +6,7 @@ using Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map;
 using Assets.TurnBasedStrategy.Scripts.Utils;
 using UnityEngine;
 using CInput = Assets.TurnBasedStrategy.Scripts.Common.Input_Managers.CameraInputManager;
+
 //using static UnityEngine.Debug;
 
 namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
@@ -20,29 +21,36 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         /// The Current level of zoom the camera is at.
         /// </summary>
         public float Zoom => _zoom;
+
         /// <summary>
         /// The speed the camera will pan at when Zoom is 0
         /// </summary>
         public float MoveSpeedMinZoom;
+
         /// <summary>
         /// The speed the camera will pan at when Zoom is 1
         /// </summary>
         public float MoveSpeedMaxZoom;
+
         public float RotationSpeed;
         [Range(0f, 360f)] public float MaxRotationAngle;
         public float MoveSpeed;
+
         /// <summary>
         /// The minimum angle of the cameras swivel when Zoom is 0.
         /// </summary>
         public float SwivelMinZoom;
+
         /// <summary>
         /// The Maximum angle of the cameras swivel when Zoom is 1.
         /// </summary>
         public float SwivelMaxZoom;
+
         /// <summary>
         /// The distance the camera sticks out from this object at when Zoom is 0.
         /// </summary>
         public float StickMinZoom;
+
         /// <summary>
         /// The distance the camera sticks out from this object at when Zoom is 1.
         /// </summary>
@@ -94,7 +102,7 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         private bool CanRotate()
         {
             return (_rotationAngle < MaxRotationAngle)
-                || (_rotationAngle > (360 - MaxRotationAngle));
+                   || (_rotationAngle > (360 - MaxRotationAngle));
         }
 
         private void AdjustZoom(float delta)

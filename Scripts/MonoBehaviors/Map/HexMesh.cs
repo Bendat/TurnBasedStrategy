@@ -1,23 +1,22 @@
 ﻿using System.Collections.Generic;
-using Assets.TurnBasedStrategy.Scripts.Common;
 using Assets.TurnBasedStrategy.Scripts.Enums;
 using UnityEngine;
 
 namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
 {
     /// <summary>
-    /// The mesh representing a grid of hexagonal cells.
+    ///     The mesh representing a grid of hexagonal cells.
     /// </summary>
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class HexMesh : MonoBehaviour
     {
+        [SerializeField] private List<Color> _colors;
         private Mesh _hexMesh;
-
-        private List<Vector3> _vertices;
+        private MeshCollider _meshCollider;
 
         private List<int> _triangles;
-        private MeshCollider _meshCollider;
-        private List<Color> _colors;
+
+        private List<Vector3> _vertices;
 
         private void Awake()
         {
@@ -30,41 +29,91 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
         }
 
         /// <summary>
-        /// Triangulates all the cells in the mesh.
+        ///     Triangulates all the cells in the mesh.
         /// </summary>
         /// <param name="cells">An array of cells to triangulate</param>
         public void Triangulate(HexCell[] cells)
         {
             ClearLists();
-            foreach (HexCell t in cells)
-            {
+            foreach (var t in cells)
                 Triangulate(t);
-            }
             FinalizeData();
         }
 
         /// <summary>
-        /// Creates the triangles responsible for the hexagon of this cell.
+        ///     Creates the triangles responsible for the hexagon of this cell.
         /// </summary>
         /// <param name="cell">The cell to Triangulate</param>
-        void Triangulate(HexCell cell)
+        private void Triangulate(HexCell cell)
         {
-            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
-            {
+            for (var d = HexDirection.NE; d <= HexDirection.NW; d++)
                 Triangulate(d, cell);
-            }
         }
 
-        void Triangulate(HexDirection direction, HexCell cell)
+        private void Triangulate(HexDirection direction, HexCell cell)
         {
-            Vector3 center = cell.transform.localPosition;
-            AddTriangle(
-                center,
-                center + HexCell.GetFirstCorner(direction),
-                center + HexCell.GetSecondCorner(direction)
+            var center = cell.transform.localPosition;
+            var v1 = center + HexCell.GetFirstSolidCorner(direction);
+            var v2 = center + HexCell.GetSecondSolidCorner(direction);
+ 
+
+
+            Vector3 bridge = HexCell.GetBridge(direction);
+            Vector3 v3 = v1 + bridge;
+            Vector3 v4 = v2 + bridge;
+
+            AddQuad(v1, v2, v3, v4);
+
+            var prevNeighbor = cell.GetNeighbor(direction.Previous()) ?? cell;
+            var neighbor = cell.GetNeighbor(direction) ?? cell;
+            var nextNeighbor = cell.GetNeighbor(direction.Next()) ?? cell;
+            var bridgeColor = (cell.Color + neighbor.Color) * 0.5f;
+
+            AddQuadColor(cell.Color, bridgeColor);
+            AddTriangle(v1, center + HexCell.GetFirstCorner(direction), v3);
+            AddTriangleColor(
+                cell.Color,
+                (cell.Color + prevNeighbor.Color + neighbor.Color) / 3f,
+                bridgeColor
             );
-            HexCell neighbor = cell.GetNeighbor(direction);
-            AddTriangleColor(cell.Color, neighbor.Color, neighbor.Color);
+        }
+
+        private void AddQuad(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4)
+        {
+            var vertexIndex = _vertices.Count;
+            _vertices.Add(v1);
+            _vertices.Add(v2);
+            _vertices.Add(v3);
+            _vertices.Add(v4);
+            _triangles.Add(vertexIndex);
+            _triangles.Add(vertexIndex + 2);
+            _triangles.Add(vertexIndex + 1);
+            _triangles.Add(vertexIndex + 1);
+            _triangles.Add(vertexIndex + 2);
+            _triangles.Add(vertexIndex + 3);
+        }
+
+        private void AddQuadColor(Color c1, Color c2, Color c3, Color c4)
+        {
+            _colors.Add(c1);
+            _colors.Add(c2);
+            _colors.Add(c3);
+            _colors.Add(c4);
+        }
+
+        private void AddQuadColor(Color c1, Color c2)
+        {
+            _colors.Add(c1);
+            _colors.Add(c1);
+            _colors.Add(c2);
+            _colors.Add(c2);
+        }
+
+        private void AddTriangleColor(Color color)
+        {
+            _colors.Add(color);
+            _colors.Add(color);
+            _colors.Add(color);
         }
 
         private void AddTriangleColor(Color c1, Color c2, Color c3)
@@ -72,12 +121,11 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
             _colors.Add(c1);
             _colors.Add(c2);
             _colors.Add(c3);
-
         }
 
         private void AddTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
         {
-            int vertexIndex = _vertices.Count;
+            var vertexIndex = _vertices.Count;
             _vertices.Add(v1);
             _vertices.Add(v2);
             _vertices.Add(v3);
@@ -96,7 +144,6 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
 
         private void FinalizeData()
         {
-
             _hexMesh.vertices = _vertices.ToArray();
             _hexMesh.triangles = _triangles.ToArray();
             _hexMesh.RecalculateNormals();

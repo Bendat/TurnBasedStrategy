@@ -56,4 +56,10 @@ MonoBehaviour:
     z: 0
     y: 0
   Color: {r: 0, g: 0, b: 0, a: 0}
-  _neighbors: []
+  _neighbors:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
