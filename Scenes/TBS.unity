@@ -364,7 +364,7 @@ MonoBehaviour:
   RotationSpeed: 30.13
   MaxRotationAngle: 0
   MoveSpeed: 86.39
-  SwivelMinZoom: 20
+  SwivelMinZoom: 0
   SwivelMaxZoom: 60
   StickMinZoom: 20
   StickMaxZoom: 40

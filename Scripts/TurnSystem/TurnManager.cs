@@ -24,6 +24,8 @@ public class TurnManager : MonoBehaviour {
 
     void Start()
     {
+        SetUpPlayers();
+
         _tmUI = GetComponent<TurnManagerUI>();
 
         TurnStart();
@@ -32,12 +34,12 @@ public class TurnManager : MonoBehaviour {
     /// <summary>
     /// Called on the start of a players turn
     /// </summary>
-    public void TurnStart()
+    void TurnStart()
     {
         // Iterate TurnNumber if it's back to the first player
-        if(CurrentPlayer == 0)
+        if (CurrentPlayer == 0)
         {
-            TurnNumber ++;
+            TurnNumber++;
         }
 
         Players[CurrentPlayer].SetPlayersTurn(true);
@@ -57,6 +59,14 @@ public class TurnManager : MonoBehaviour {
         CurrentPlayer++;
         if (CurrentPlayer >= Players.Count) CurrentPlayer = 0;
         TurnStart();
+    }
+
+    void SetUpPlayers()
+    {
+        foreach(Player p in Players)
+        {
+            p.SetPlayersTurn(false);
+        }
     }
     
 }
