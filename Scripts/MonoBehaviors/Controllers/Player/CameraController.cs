@@ -5,7 +5,7 @@ using Assets.TurnBasedStrategy.Scripts.Common;
 using Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map;
 using Assets.TurnBasedStrategy.Scripts.Utils;
 using UnityEngine;
-//using static UnityEngine.Debug;
+using CamInput = Assets.TurnBasedStrategy.Scripts.Common.Input_Managers.CameraInputManager;
 
 namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
 {
@@ -47,11 +47,6 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         /// </summary>
         public float StickMaxZoom;
 
-        private float XDelta => Input.GetAxis("Horizontal");
-        private float ZDelta => Input.GetAxis("Vertical");
-        private float ZoomDelta => Input.GetAxis("Mouse ScrollWheel");
-        private float RotationDelta => Input.GetAxis("Rotation");
-
         [ReadOnly] [SerializeField] private Quaternion _originalRotation;
         [ReadOnly] [SerializeField] private Transform _swivel;
         [ReadOnly] [SerializeField] private Transform _stick;
@@ -74,22 +69,22 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
 
         private void Update()
         {
-            if (ZoomDelta != 0f)
+            if (CamInput.Inst.Scroll != 0f)
             {
-                AdjustZoom(ZoomDelta);
+                AdjustZoom(CamInput.Inst.Scroll);
             }
-            if (RotationDelta != 0f && CanRotate())
+            if (CamInput.Inst.Rotation != 0f && CanRotate())
             {
-                _lastDelta = RotationDelta;
+                _lastDelta = CamInput.Inst.Rotation;
                 AdjustRotation(_lastDelta);
             }
             else if (Math.Abs(_rotationAngle - _originalRotation.z) > 0.5f)
             {
                 Snap();
             }
-            if (XDelta != 0f || ZDelta != 0f)
+            if (CamInput.Inst.Horizontal != 0f || CamInput.Inst.Vertical != 0f)
             {
-                AdjustPosition(XDelta, ZDelta);
+                AdjustPosition(CamInput.Inst.Horizontal, CamInput.Inst.Vertical);
             }
         }
 
