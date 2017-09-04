@@ -34,7 +34,7 @@ public class TurnManager : MonoBehaviour {
     /// </summary>
     public void TurnStart()
     {
-        // Iterate the turn if it's back to the first player
+        // Iterate TurnNumber if it's back to the first player
         if(CurrentPlayer == 0)
         {
             TurnNumber ++;
@@ -42,6 +42,7 @@ public class TurnManager : MonoBehaviour {
 
         Players[CurrentPlayer].SetPlayersTurn(true);
 
+        //Update GUI
         _tmUI.UpdateTurnNumber(TurnNumber);
         _tmUI.UpdateCurrentPlayerText(Players[CurrentPlayer].PlayerName);
     }
