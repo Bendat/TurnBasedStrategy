@@ -5,10 +5,12 @@ using UnityEngine.UI;
 
 public class TurnManager : MonoBehaviour {
 
+    TurnManagerUI _tmUI;
+
     /// <summary>
     /// The Current Turn Number
     /// </summary>
-    public int TurnNumber = 1;
+    public int TurnNumber = 0;
 
     /// <summary>
     /// A list of all players in the game
@@ -16,16 +18,32 @@ public class TurnManager : MonoBehaviour {
     public List<Player> Players;
 
     /// <summary>
-    /// The player whose turn it is
+    /// The list index of the current player
     /// </summary>
-    public Player CurrentPlayer;
+    public int CurrentPlayer = 0;
+
+    void Start()
+    {
+        _tmUI = GetComponent<TurnManagerUI>();
+
+        TurnStart();
+    }
 
     /// <summary>
     /// Called on the start of a players turn
     /// </summary>
     public void TurnStart()
     {
+        // Iterate the turn if it's back to the first player
+        if(CurrentPlayer == 0)
+        {
+            TurnNumber ++;
+        }
 
+        Players[CurrentPlayer].SetPlayersTurn(true);
+
+        _tmUI.UpdateTurnNumber(TurnNumber);
+        _tmUI.UpdateCurrentPlayerText(Players[CurrentPlayer].PlayerName);
     }
 
     /// <summary>
@@ -33,14 +51,11 @@ public class TurnManager : MonoBehaviour {
     /// </summary>
     public void EndTurn()
     {
-        // This should call 
-    }
+        Players[CurrentPlayer].SetPlayersTurn(false);
 
-    void Start()
-    {
-        
+        CurrentPlayer++;
+        if (CurrentPlayer >= Players.Count) CurrentPlayer = 0;
+        TurnStart();
     }
-
-    
     
 }
