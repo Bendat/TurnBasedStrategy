@@ -28,7 +28,7 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         /// </summary>
         public float MoveSpeedMaxZoom;
         public float RotationSpeed;
-        [Range(0f,360f)]public float MaxRotationAngle;
+        [Range(0f, 360f)] public float MaxRotationAngle;
         public float MoveSpeed;
         /// <summary>
         /// The minimum angle of the cameras swivel when Zoom is 0.
@@ -56,9 +56,9 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         [ReadOnly] [SerializeField] private Transform _swivel;
         [ReadOnly] [SerializeField] private Transform _stick;
 
-        [ReadOnly][SerializeField]private float _lastDelta;
-        [ReadOnly][SerializeField]private float _rotationAngle;
-        [ReadOnly][SerializeField]private float _zoom;
+        [ReadOnly] [SerializeField] private float _lastDelta;
+        [ReadOnly] [SerializeField] private float _rotationAngle;
+        [ReadOnly] [SerializeField] private float _zoom;
 
         private void Awake()
         {
@@ -82,7 +82,8 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
             {
                 _lastDelta = RotationDelta;
                 AdjustRotation(_lastDelta);
-            }else if (Math.Abs(_rotationAngle - _originalRotation.z) > 0.5f)
+            }
+            else if (Math.Abs(_rotationAngle - _originalRotation.z) > 0.5f)
             {
                 Snap();
             }
@@ -94,12 +95,12 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
 
         private bool CanRotate()
         {
-            return (_rotationAngle < MaxRotationAngle) 
+            return (_rotationAngle < MaxRotationAngle)
                 || (_rotationAngle > (360 - MaxRotationAngle));
         }
 
         private void AdjustZoom(float delta)
-        {        
+        {
             _zoom = Mathf.Clamp01(Zoom + delta);
 
             float distance = Mathf.Lerp(StickMinZoom, StickMaxZoom, Zoom);
@@ -110,8 +111,8 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         }
 
         private void Snap()
-        {      
-            AdjustRotation(_lastDelta>0?-1:1);
+        {
+            AdjustRotation(_lastDelta > 0 ? -1 : 1);
         }
 
         private void AdjustRotation(float delta)
