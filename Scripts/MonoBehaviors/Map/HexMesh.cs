@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Assets.TurnBasedStrategy.Scripts.Common;
+using Assets.TurnBasedStrategy.Scripts.Enums;
 using UnityEngine;
 
 namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
@@ -46,26 +47,31 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
         /// Creates the triangles responsible for the hexagon of this cell.
         /// </summary>
         /// <param name="cell">The cell to Triangulate</param>
-        public void Triangulate(HexCell cell)
+        void Triangulate(HexCell cell)
         {
-            Vector3 center = cell.transform.localPosition;
-            for (int i = 0; i < HexCell.Corners.Length - 1; i++)
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
             {
-                AddTriangle(
-                    center,
-                    center + HexCell.Corners[i],
-                    center + HexCell.Corners[i + 1]
-                );
-                AddTriangleColor(cell.Color);
+                Triangulate(d, cell);
             }
-
         }
 
-        private void AddTriangleColor(Color color)
+        void Triangulate(HexDirection direction, HexCell cell)
         {
-            _colors.Add(color);
-            _colors.Add(color);
-            _colors.Add(color);
+            Vector3 center = cell.transform.localPosition;
+            AddTriangle(
+                center,
+                center + HexCell.GetFirstCorner(direction),
+                center + HexCell.GetSecondCorner(direction)
+            );
+            HexCell neighbor = cell.GetNeighbor(direction);
+            AddTriangleColor(cell.Color, neighbor.Color, neighbor.Color);
+        }
+
+        private void AddTriangleColor(Color c1, Color c2, Color c3)
+        {
+            _colors.Add(c1);
+            _colors.Add(c2);
+            _colors.Add(c3);
 
         }
 

@@ -23,7 +23,7 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
         /// <summary>
         /// The corners of a hexagon.
         /// </summary>
-        public static Vector3[] Corners = {
+        public static readonly Vector3[] Corners = {
             new Vector3(0f, 0f, OuterRadius),
 
             new Vector3(InnerRadius, 0f, 0.5f * OuterRadius),
@@ -46,6 +46,17 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
         public Color Color;
 
         [SerializeField] private HexCell[] _neighbors;
+
+
+        public static Vector3 GetFirstCorner(HexDirection direction)
+        {
+            return Corners[(int)direction];
+        }
+
+        public static Vector3 GetSecondCorner(HexDirection direction)
+        {
+            return Corners[(int)direction + 1];
+        }
 
         public HexCell GetNeighbor(HexDirection direction)
         {
