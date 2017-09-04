@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using Assets.TurnBasedStrategy.Scripts.Common;
+using Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map;
 using Assets.TurnBasedStrategy.Scripts.Utils;
 using UnityEngine;
 //using static UnityEngine.Debug;
@@ -14,225 +16,129 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
     public class CameraController : MonoBehaviour
     {
         /// <summary>
-        /// The time taken for the cameras panning speed to go from minimum to maximum.
+        /// The Current level of zoom the camera is at.
         /// </summary>
-        public float PanAccelerationTime = 1f;
-
+        public float Zoom => _zoom;
         /// <summary>
-        /// The highest speed the camera can pan at.
+        /// The speed the camera will pan at when Zoom is 0
         /// </summary>
-        public float MaxPanSpeed = 20f;
-
+        public float MoveSpeedMinZoom;
         /// <summary>
-        /// The resting speed of the camera.
+        /// The speed the camera will pan at when Zoom is 1
         /// </summary>
-        public float MinPanSpeed = 0f;
-
+        public float MoveSpeedMaxZoom;
+        public float RotationSpeed;
+        [Range(0f,360f)]public float MaxRotationAngle;
+        public float MoveSpeed;
         /// <summary>
-        /// The current speed at which the camera is panning.
+        /// The minimum angle of the cameras swivel when Zoom is 0.
         /// </summary>
-        public float PanSpeed => _panSpeed;
-
+        public float SwivelMinZoom;
         /// <summary>
-        /// The speed at which the camera zooms in and out of the map.
+        /// The Maximum angle of the cameras swivel when Zoom is 1.
         /// </summary>
-        public float ZoomSpeed = 20f;
-
+        public float SwivelMaxZoom;
         /// <summary>
-        /// The highest distance above the ground the camera can zoom to.
+        /// The distance the camera sticks out from this object at when Zoom is 0.
         /// </summary>
-        public float MaxZoomHeight = 70f;
-
+        public float StickMinZoom;
         /// <summary>
-        /// The lowest distance above the ground the camera can zoom to.
+        /// The distance the camera sticks out from this object at when Zoom is 1.
         /// </summary>
-        public float MinZoomHeight = 10f;
+        public float StickMaxZoom;
 
-        /// <summary>
-        /// The multiplier to apply to the cameras speed when shift is held.
-        /// </summary>
-        public float PanSprintMultiplier = 3;
+        private float XDelta => Input.GetAxis("Horizontal");
+        private float ZDelta => Input.GetAxis("Vertical");
+        private float ZoomDelta => Input.GetAxis("Mouse ScrollWheel");
+        private float RotationDelta => Input.GetAxis("Rotation");
 
-        public float DecelerationTime = 5;
-        /// <summary>
-        /// The DirectionInformation of the camera during the current frame.
-        /// </summary>
-        public DirectionInformation DirectionInfo;
+        [ReadOnly] [SerializeField] private Quaternion _originalRotation;
+        [ReadOnly] [SerializeField] private Transform _swivel;
+        [ReadOnly] [SerializeField] private Transform _stick;
 
-        private float _panSpeedBase = 0; // the point at which to start lerping if the ActualMaxSpeed is changed. 
-        private bool _crIsRunning; // Indicates if the AccelerationRoutine is running.
-        [ReadOnly][SerializeField] private float _panSpeed;
-        [ReadOnly][SerializeField] private Vector3 _velocity;
-        private Vector3 _previousPosition;
+        [ReadOnly][SerializeField]private float _lastDelta;
+        [ReadOnly][SerializeField]private float _rotationAngle;
+        [ReadOnly][SerializeField]private float _zoom;
 
-        // Used to calculate whether the panning speed of the camera is modified due to shift being held.
-
-        private float ActualMaxPanSpeed => Input.GetKey(KeyCode.LeftShift) ? MaxPanSpeed * PanSprintMultiplier: MaxPanSpeed;
-
-        private float ActualMinPanSpeed => Input.GetKey(KeyCode.LeftShift) ? _panSpeedBase : MinPanSpeed;
-
-        // Determines if the max speed sould be increased due to shift being held.
-        private bool CanDoubleAccelerate => Mathf.Abs(PanSpeed - MaxPanSpeed) < 0.5 && Input.GetKey(KeyCode.LeftShift);
-
+        private void Awake()
+        {
+            _originalRotation = transform.localRotation;
+            _swivel = transform.GetChild(0);
+            _stick = _swivel.GetChild(0);
+        }
 
         private void Start()
         {
-            _previousPosition = transform.position;
-            _panSpeed = MinPanSpeed;
+            AdjustZoom(0);
         }
 
         private void Update()
         {
-            _velocity = (_previousPosition - transform.position) / Time.deltaTime;
-            _previousPosition = transform.position;
-
-            var directionsLastFrame = DirectionInfo;
-
-            var pos = transform.position;
-            DirectionInfo = GetAxis();
-
-            /*
-             * ref parameters allow structs to be modified as is without the need to assign a returned copy.
-             * In other words treats structs as if they were an object which was initialized from a Class.
-             */
-
-            HandleAcceleration(ref DirectionInfo, directionsLastFrame);
-
-            HandleMovement(ref pos);
-           
-            Zoom(ref pos);
-
-            transform.position = pos;
-        }
-
-        // handles zooming in and out of the map.
-        private void Zoom(ref Vector3 pos)
-        {
-            var scroll = Input.GetAxis("Mouse ScrollWheel");
-            if (scroll > 0 && pos.y > MinZoomHeight)
+            if (ZoomDelta != 0f)
             {
-                pos += transform.forward * Time.deltaTime * ZoomSpeed;
-            }else if (scroll < 0 && pos.y < MaxZoomHeight)
+                AdjustZoom(ZoomDelta);
+            }
+            if (RotationDelta != 0f && CanRotate())
             {
-                pos -= transform.forward * Time.deltaTime * ZoomSpeed;
+                _lastDelta = RotationDelta;
+                AdjustRotation(_lastDelta);
+            }else if (Math.Abs(_rotationAngle - _originalRotation.z) > 0.5f)
+            {
+                Snap();
+            }
+            if (XDelta != 0f || ZDelta != 0f)
+            {
+                AdjustPosition(XDelta, ZDelta);
             }
         }
 
-        private bool _isDecelerating;
-        private Vector3 _decelerationDirection;
-
-        private void HandleAcceleration(ref DirectionInformation directionInfo, DirectionInformation directionsLastFrame)
+        private bool CanRotate()
         {
-            if (!directionsLastFrame.IsStationary && directionInfo.IsStationary)
-            {
-//                Debug.Log("Decelerating");
-//                _panSpeedBase = _panSpeedBase != 0 ? PanSpeed : 0;
-//                var pos = transform.position;
-//                var finalPos = -(transform.position+(transform.InverseTransformDirection(directionsLastFrame.ToVector3())
-//                               + (_velocity * DecelerationTime)));
-//
-//                StartCoroutine(AccelerationRoutine((timer) =>
-//                {
-//                    Debug.Log(transform.position);
-//                    transform.position = Vector3.Lerp(pos, finalPos, timer / DecelerationTime);
-//                }, PanAccelerationTime, false));
-            }
-             if (!directionInfo.IsStationary)
-            {
-                // We only want to run the coroutine if the player requests movement and either we weren't moving last frame,
-                // or the shift key has been pressed (modifying the max speed)
-                if (!_crIsRunning && (CanDoubleAccelerate || directionsLastFrame.IsStationary))
-                {
-                    StartCoroutine(AccelerationRoutine((timer) =>
-                    {
-                        _panSpeed = Mathf.Lerp(ActualMinPanSpeed, ActualMaxPanSpeed, timer / PanAccelerationTime);
-                    }, PanAccelerationTime, true));
-                }
-                else if (PanSpeed > ActualMaxPanSpeed)
-                {
-                    // Smoothly ramp up or down MaxSpeed if shift is held.
-                    // Might be able to remove this else-if, haven't checked.
-                    _panSpeedBase = _panSpeedBase != 0 ? PanSpeed : 0;
-                    StartCoroutine(AccelerationRoutine((timer) =>
-                    {
-                        _panSpeed = Mathf.Lerp(ActualMinPanSpeed, ActualMaxPanSpeed, timer / PanAccelerationTime);
-                        _panSpeedBase = 0;
-                    }, PanAccelerationTime, true));
-                }
-            }
+            return (_rotationAngle < MaxRotationAngle) 
+                || (_rotationAngle > (360 - MaxRotationAngle));
         }
 
-        /// <summary>
-        /// A coroutine which takes a number of seconds to execute equal to the PanAccelerationTime property. It will repeatedly perform
-        /// an Action until the timer runs out. Exits prematurely if the camera is stationary or the timer exceeds its limit.
-        /// </summary>
-        /// <param name="action">An Action or Method delegate which takes a float, "timer" which represents the amount of time in seconds that this routine has been active for,
-        /// as a parameter. Called repeatedly until timer is equal to PanAccelerationTime.
-        /// </param>
-        /// <returns>Enumerator of nulls</returns>
-        protected IEnumerator AccelerationRoutine(Action<float> action, float time, bool stopWhenStationary)
+        private void AdjustZoom(float delta)
+        {        
+            _zoom = Mathf.Clamp01(Zoom + delta);
+
+            float distance = Mathf.Lerp(StickMinZoom, StickMaxZoom, Zoom);
+            _stick.localPosition = new Vector3(0f, 0f, distance);
+
+            float angle = Mathf.Lerp(SwivelMinZoom, SwivelMaxZoom, Zoom);
+            _swivel.localRotation = Quaternion.Euler(angle, 0f, 0f);
+        }
+
+        private void Snap()
+        {      
+            AdjustRotation(_lastDelta>0?-1:1);
+        }
+
+        private void AdjustRotation(float delta)
         {
-            _crIsRunning = true;
-            var timer = 0f;
-            while (timer < time)
+            _rotationAngle += delta * RotationSpeed * Time.deltaTime;
+            if (_rotationAngle < 0f)
             {
-                if (stopWhenStationary && DirectionInfo.IsStationary)
-                {
-                    break;
-                }
-                timer += Time.deltaTime;
-                action(timer);
-                yield return null;
+                _rotationAngle += 360f;
             }
-            _crIsRunning = false;
-        }
-
-
-
-        private void HandleMovement(ref Vector3 pos)
-        {
-            HandleVerticalMovement(ref pos);
-            HandleHorizontalMovement(ref pos);
-            if (DirectionInfo.IsStationary)
+            else if (_rotationAngle >= 360f)
             {
-                _panSpeed = 0f;
+                _rotationAngle -= 360f;
             }
+            transform.localRotation = Quaternion.Euler(0f, _rotationAngle, 0f);
         }
 
-        private void HandleVerticalMovement(ref Vector3 pos)
+        private void AdjustPosition(float xDelta, float zDelta)
         {
-            switch (DirectionInfo.Vertical)
-            {
-                case MoveDirection.Forward:
-                    pos.z += PanSpeed * Time.deltaTime;
-                    break;
-                case MoveDirection.Backward:
-                    pos.z -= PanSpeed * Time.deltaTime;
-                    break;
-                default:
-                    break;
-            }
-        }
+            Vector3 direction = transform.localRotation * new Vector3(xDelta, 0f, zDelta).normalized;
+            float damping = Mathf.Max(Mathf.Abs(xDelta), Mathf.Abs(zDelta));
+            float distance =
+                Mathf.Lerp(MoveSpeedMinZoom, MoveSpeedMaxZoom, Zoom) *
+                damping * Time.deltaTime;
 
-        private void HandleHorizontalMovement(ref Vector3 pos)
-        {
-            switch (DirectionInfo.Horizontal)
-            {
-                case MoveDirection.Right:
-                    pos.x += PanSpeed * Time.deltaTime;
-                    break;
-                case MoveDirection.Left:
-                    pos.x -= PanSpeed * Time.deltaTime;
-                    break;
-                default:
-                    break;
-            }
+            Vector3 position = transform.localPosition;
+            position += direction * distance;
+            transform.localPosition = position;
         }
-
-        private DirectionInformation GetAxis()
-        {
-            return new DirectionInformation(Input.GetAxis("PanLeftRight"), Input.GetAxis("PanUpDown"));
-        }
-
     }
 }
