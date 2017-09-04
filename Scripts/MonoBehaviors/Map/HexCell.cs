@@ -1,4 +1,5 @@
 ﻿using Assets.TurnBasedStrategy.Scripts.Common;
+using Assets.TurnBasedStrategy.Scripts.Enums;
 using UnityEngine;
 
 namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
@@ -43,5 +44,18 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Map
         /// The color of this cells material.
         /// </summary>
         public Color Color;
+
+        [SerializeField] private HexCell[] _neighbors;
+
+        public HexCell GetNeighbor(HexDirection direction)
+        {
+            return _neighbors[(int)direction];
+        }
+
+        public void SetNeighbor(HexDirection direction, HexCell cell)
+        {
+            _neighbors[(int) direction] = cell;
+            cell._neighbors[(int)direction] = this;
+        }
     }
 }

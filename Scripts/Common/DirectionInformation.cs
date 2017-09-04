@@ -47,7 +47,39 @@ namespace Assets.TurnBasedStrategy.Scripts.Common
                         MoveDirection.Backward: 
                         MoveDirection.Stationary;
         }
+
+        public Vector3 ToVector3()
+        {
+            Vector3 hor, ver;
+            switch (Horizontal)
+            {
+                case MoveDirection.Backward:
+                    hor = -Vector3.forward;
+                    break;
+                case MoveDirection.Forward:
+                    hor = Vector3.forward;
+                    break;
+                default:
+                    hor = Vector3.zero;
+                    break;
+            }
+
+            switch (Vertical)
+            {
+                case MoveDirection.Left:
+                    ver = -Vector3.right;
+                    break;
+                case MoveDirection.Right:
+                    ver = Vector3.right;
+                    break;
+                default:
+                    ver = Vector3.zero;
+                    break;
+            }
+            return hor + ver;
+        }
     }
 
     public enum MoveDirection { Stationary, Forward, Backward, Left, Right }
+    public enum AccelerationStatus { Accelerating, Decelerating}
 }

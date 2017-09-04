@@ -37,6 +37,7 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         /// The speed at which the camera zooms in and out of the map.
         /// </summary>
         public float ZoomSpeed = 20f;
+
         /// <summary>
         /// The highest distance above the ground the camera can zoom to.
         /// </summary>
@@ -52,6 +53,7 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         /// </summary>
         public float PanSprintMultiplier = 3;
 
+        public float DecelerationTime = 5;
         /// <summary>
         /// The DirectionInformation of the camera during the current frame.
         /// </summary>
@@ -84,7 +86,7 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
             _velocity = (_previousPosition - transform.position) / Time.deltaTime;
             _previousPosition = transform.position;
 
-            var wasStationaryLastFrame = DirectionInfo.IsStationary;
+            var directionsLastFrame = DirectionInfo;
 
             var pos = transform.position;
             DirectionInfo = GetAxis();
@@ -94,7 +96,7 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
              * In other words treats structs as if they were an object which was initialized from a Class.
              */
 
-            HandleAcceleration(ref DirectionInfo, wasStationaryLastFrame);
+            HandleAcceleration(ref DirectionInfo, directionsLastFrame);
 
             HandleMovement(ref pos);
            
@@ -116,40 +118,47 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
             }
         }
 
+        private bool _isDecelerating;
+        private Vector3 _decelerationDirection;
 
-        private void HandleAcceleration(ref DirectionInformation directionInfo, bool wasStationaryLastFrame)
+        private void HandleAcceleration(ref DirectionInformation directionInfo, DirectionInformation directionsLastFrame)
         {
-            // A variable containing an invokable method which takes a parameter of type float (the current phase in the lerp timer)
-            // Doing this allows the same routine to lerp in multiple directions (or perform some other action every loop of the routine)
-            Action<float> accelerate = (timer) => {
-                _panSpeed = Mathf.Lerp(ActualMinPanSpeed, ActualMaxPanSpeed, timer / PanAccelerationTime);
-            };
-            if (!directionInfo.IsStationary)
+            if (!directionsLastFrame.IsStationary && directionInfo.IsStationary)
+            {
+//                Debug.Log("Decelerating");
+//                _panSpeedBase = _panSpeedBase != 0 ? PanSpeed : 0;
+//                var pos = transform.position;
+//                var finalPos = -(transform.position+(transform.InverseTransformDirection(directionsLastFrame.ToVector3())
+//                               + (_velocity * DecelerationTime)));
+//
+//                StartCoroutine(AccelerationRoutine((timer) =>
+//                {
+//                    Debug.Log(transform.position);
+//                    transform.position = Vector3.Lerp(pos, finalPos, timer / DecelerationTime);
+//                }, PanAccelerationTime, false));
+            }
+             if (!directionInfo.IsStationary)
             {
                 // We only want to run the coroutine if the player requests movement and either we weren't moving last frame,
                 // or the shift key has been pressed (modifying the max speed)
-                if (!_crIsRunning && (CanDoubleAccelerate || wasStationaryLastFrame))
+                if (!_crIsRunning && (CanDoubleAccelerate || directionsLastFrame.IsStationary))
                 {
-                    StartCoroutine(AccelerationRoutine(accelerate));
+                    StartCoroutine(AccelerationRoutine((timer) =>
+                    {
+                        _panSpeed = Mathf.Lerp(ActualMinPanSpeed, ActualMaxPanSpeed, timer / PanAccelerationTime);
+                    }, PanAccelerationTime, true));
                 }
                 else if (PanSpeed > ActualMaxPanSpeed)
                 {
                     // Smoothly ramp up or down MaxSpeed if shift is held.
                     // Might be able to remove this else-if, haven't checked.
-                    if (_panSpeedBase != 0)
+                    _panSpeedBase = _panSpeedBase != 0 ? PanSpeed : 0;
+                    StartCoroutine(AccelerationRoutine((timer) =>
                     {
-                        _panSpeedBase = PanSpeed;
-                    }
-                    _panSpeedBase = _panSpeedBase != 0? _panSpeed: -1;
-                    StartCoroutine(AccelerationRoutine((timer) => {
                         _panSpeed = Mathf.Lerp(ActualMinPanSpeed, ActualMaxPanSpeed, timer / PanAccelerationTime);
-                        _panSpeedBase = -1;
-                    }));
+                        _panSpeedBase = 0;
+                    }, PanAccelerationTime, true));
                 }
-            }
-            else if ((!wasStationaryLastFrame && directionInfo.IsStationary))
-            {
-                StopCoroutine(AccelerationRoutine(accelerate));
             }
         }
 
@@ -161,19 +170,24 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         /// as a parameter. Called repeatedly until timer is equal to PanAccelerationTime.
         /// </param>
         /// <returns>Enumerator of nulls</returns>
-        protected IEnumerator AccelerationRoutine(Action<float> action)
+        protected IEnumerator AccelerationRoutine(Action<float> action, float time, bool stopWhenStationary)
         {
             _crIsRunning = true;
             var timer = 0f;
-            while (timer < PanAccelerationTime
-                   && !DirectionInfo.IsStationary)
+            while (timer < time)
             {
+                if (stopWhenStationary && DirectionInfo.IsStationary)
+                {
+                    break;
+                }
                 timer += Time.deltaTime;
                 action(timer);
                 yield return null;
             }
             _crIsRunning = false;
         }
+
+
 
         private void HandleMovement(ref Vector3 pos)
         {
