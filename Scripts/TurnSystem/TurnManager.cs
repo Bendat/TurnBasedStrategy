@@ -34,12 +34,12 @@ public class TurnManager : MonoBehaviour {
     /// <summary>
     /// Called on the start of a players turn
     /// </summary>
-    void TurnStart()
+    public void TurnStart()
     {
-        // Iterate TurnNumber if it's back to the first player
-        if (CurrentPlayer == 0)
+        // Iterate the turn if it's back to the first player
+        if(CurrentPlayer == 0)
         {
-            TurnNumber++;
+            TurnNumber ++;
         }
 
         Players[CurrentPlayer].SetPlayersTurn(true);
@@ -67,6 +67,5 @@ public class TurnManager : MonoBehaviour {
         {
             p.SetPlayersTurn(false);
         }
-    }
-    
+    }    
 }
