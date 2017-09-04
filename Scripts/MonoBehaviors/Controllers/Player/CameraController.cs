@@ -56,6 +56,8 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Controllers.Player
         [ReadOnly] [SerializeField] private float _rotationAngle;
         [ReadOnly] [SerializeField] private float _zoom;
 
+        //asdasdasdasd
+
         private void Awake()
         {
             _originalRotation = transform.localRotation;
