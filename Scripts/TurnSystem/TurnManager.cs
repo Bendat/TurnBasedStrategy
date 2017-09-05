@@ -44,6 +44,8 @@ public class TurnManager : MonoBehaviour {
 
         Players[CurrentPlayer].SetPlayersTurn(true);
 
+        Players[CurrentPlayer].Refresh();
+
         //Update GUI
         _tmUI.UpdateTurnNumber(TurnNumber);
         _tmUI.UpdateCurrentPlayerText(Players[CurrentPlayer].PlayerName);

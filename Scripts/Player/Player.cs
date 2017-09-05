@@ -19,8 +19,10 @@ public class Player : MonoBehaviour {
     /// </summary>
     bool _isAI;
 
-    public List<string> Buildings;
-    public List<string> Units;
+    public List<Building> Buildings;
+    public List<Unit> Units;
+
+    public int WorkPerTurn;
 
     /// <summary>
     /// Used to activate or deactivate this player
@@ -34,9 +36,16 @@ public class Player : MonoBehaviour {
     /// <summary>
     /// calls the refresh abstract method of all buildings and units
     /// </summary>
-    void Refresh()
+    public void Refresh()
     {
-
+        foreach(Unit unit in Units)
+        {
+            unit.Refresh();
+        }
+        foreach(Building building in Buildings)
+        {
+            building.Refresh();
+        }
     }
 
 }
