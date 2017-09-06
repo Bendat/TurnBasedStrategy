@@ -34,7 +34,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1512698030316450}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5, y: 1, z: 5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -48,15 +48,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1512698030316450}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 015665d19e6250a4baf4fea62029049d, type: 3}
+  m_Script: {fileID: 11500000, guid: 6235c0043bb251a419295bb701926df2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   BuildingName: Cube
   Owner: {fileID: 0}
-  BuildingPrefab: {fileID: 1423671643181388, guid: 811f86af72198c34d98aa263691e0b8b,
+  BuildingPrefab: {fileID: 1423671643181388, guid: 989768dcd1de0e149a1fee959e387dfc,
     type: 2}
-  UnderConstructionPrefab: {fileID: 1066474700108230, guid: 82cc5815fcecb1e4a9da993d203963d5,
+  UnderConstructionPrefab: {fileID: 1066474700108230, guid: ee851556c13d39c4d860b371ca875027,
     type: 2}
-  UnderConstruction: 1
+  UnderConstruction: 0
   WorkRequired: 5
   WorkCompleted: 0
