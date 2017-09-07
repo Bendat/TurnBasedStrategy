@@ -1,16 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Examples.Attributable
 {
+    [Serializable]
     public struct BuilderAttributes: IUnitAttribute
     {
-        public string MovesPerTurn;
-        public string SpeedBonus;
+        public int MovesPerTurn => _movesPerTurn;
+        public int SpeedBonus => _speedBonus;
 
-        public BuilderAttributes(string movesPerTurn, string speedBonus)
+        [SerializeField]private int _movesPerTurn;
+        [SerializeField]private int _speedBonus;
+
+        public BuilderAttributes(int movesPerTurn, int speedBonus)
         {
-            MovesPerTurn = movesPerTurn;
-            SpeedBonus = speedBonus;
+            _movesPerTurn = movesPerTurn;
+            _speedBonus = speedBonus;
         }
 
         public override bool Equals(object obj)
@@ -21,16 +27,16 @@ namespace Assets.TurnBasedStrategy.Scripts.MonoBehaviors.Examples.Attributable
             }
 
             var attribute = (BuilderAttributes)obj;
-            return MovesPerTurn == attribute.MovesPerTurn &&
-                   SpeedBonus == attribute.SpeedBonus;
+            return _movesPerTurn == attribute._movesPerTurn &&
+                   _speedBonus == attribute._speedBonus;
         }
 
         public override int GetHashCode()
         {
             var hashCode = 1916520042;
             hashCode = hashCode * -1521134295 + base.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(MovesPerTurn);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SpeedBonus);
+            hashCode = hashCode * -1521134295 + _movesPerTurn.GetHashCode();
+            hashCode = hashCode * -1521134295 + _speedBonus.GetHashCode();
             return hashCode;
         }
 
