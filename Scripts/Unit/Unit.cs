@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Unit : MonoBehaviour {
+public class Unit : MonoBehaviour {
 
-    public string UnitName;
+    public List<Person> People;
+    public List<string> Weapons; // This list should be the same length as People
+    // Where People[0] has Weapons[0] etc
 
-    public abstract void Refresh();
+    public void Refresh(){
+        
+    }
 }
